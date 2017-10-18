@@ -1,0 +1,12 @@
+#!/bin/sh
+
+cd "$( dirname "$0" )"
+
+# whether we support --harmony-destructuring (removed in future
+# versions of Node)
+harmony=
+if node --v8-options | grep -q -- --harmony_destructuring; then
+  harmony=--harmony-destructuring
+fi
+
+exec node "$harmony" compile.js "$@"

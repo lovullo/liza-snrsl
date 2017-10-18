@@ -1,0 +1,9 @@
+{
+  "name":        "protiviti-dsl",
+  "description": "Protiviti Structured Rating DSL",
+  "author":      "RT Buffalo",
+
+  "dependencies": {
+    "csvtojson": ">=1.1"
+  }
+}
