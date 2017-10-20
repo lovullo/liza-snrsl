@@ -38,8 +38,10 @@ module.exports = class NodeXmlGenerator
         {
             const { class: code, desc } = cnode.data;
 
+            const cdesc = this._xmlEscape( desc || `Class ${code}` );
+
             return `    <item name="CLASS_${code}" value="${code}"\n` +
-                `          desc="${desc}" />`;
+                `          desc="${cdesc}" />`;
         } );
 
         const typedef = `<typedef name="classCode" desc="ISO Class Codes">\n` +
@@ -58,12 +60,14 @@ module.exports = class NodeXmlGenerator
     {
         const { qid, label, qtype } = node.data;
 
+        const esclabel = this._xmlEscape( label );
+
         const [ cnode, when ] = this._genWhen( graph, node );
         const tail            = this._genTail( graph, node );
 
         const xml =
             `<question id="${qid}"\n` +
-            `           label="${label}"\n` +
+            `           label="${esclabel}"\n` +
             `           type="${qtype}"\n` +
             `           when="${when}"${tail}`;
 
@@ -85,6 +89,15 @@ module.exports = class NodeXmlGenerator
         }
 
         return node;
+    }
+
+
+    _xmlEscape( str )
+    {
+        return str.replace( /&/g, '&amp;' )
+            .replace( /"/g, '&dquo;' )
+            .replace( /</g, '&lt;' )
+            .replace( />/g, '&gt;' );
     }
 
 
