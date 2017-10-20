@@ -69,9 +69,9 @@ parser.parse(
                 const [ label, f ] = outsteps[ step ];
 
                 console.error( label );
-                console.log( f( graph ) );
-
-                return graph;
+                return Promise.resolve( f( graph ) )
+                    .then( result => console.log( result ) )
+                    .then( _ => graph );
             }
         }
 
