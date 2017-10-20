@@ -84,28 +84,35 @@ module.exports = class SpecParser
 
         const [ match, ws, line ] = linematch;
 
-        const toks = this._lex( linematch );
+        const toks = this._lex( linematch, class_code );
 
-        return [ class_code, toks.concat(
+        return toks.concat(
             this._parseQset(
                 [ class_code, qstr.slice( match.length ) ],
                 pos + match.length
             )
-        ) ];
+        );
     }
 
 
-    _lex( match )
+    _lex( match, class_code )
     {
         const [ lexeme, ws, line ] = match;
 
         const toks = this._makeTokens( line );
 
+        // sub-questions should count as indented despite the lack of
+        // whitespace
+        const length = ( /^-/.test( line ) )
+            ? ws.length + 1
+            : ws.length;
+
         // add indent and lexeme metadata
         return toks.map( tok =>
         {
-            tok.depth  = ws.length;
-            tok.lexeme = lexeme;
+            tok.depth      = length;
+            tok.lexeme     = lexeme;
+            tok.class_code = class_code;
 
             return tok;
         } );
@@ -301,7 +308,7 @@ module.exports = class SpecParser
     }
 
 
-    _rowToGraph( graph, [ [ class_code, class_desc ], tokens ] )
+    _rowToGraph( graph, tokens )
     {
         if ( tokens.length === 0 ) {
             return [];
@@ -315,6 +322,8 @@ module.exports = class SpecParser
             );
         }
 
+        const [ class_code, class_desc ] = tok.class_code;
+
         const class_node = this._createClassNode(
             graph, class_code, class_desc
         );
@@ -323,6 +332,8 @@ module.exports = class SpecParser
             class_node,
             this._createQuestions( graph, tok, tokens )
         );
+
+        this._rowToGraph( graph, tokens );
     }
 
 
@@ -351,14 +362,21 @@ module.exports = class SpecParser
             `class$${class_code}`
         );
 
-        graph.addEdge( 'classes', class_node, { type: 'classroot' } );
+        graph.addEdgeIfNew(
+            'classes',
+            class_node,
+            { type: 'classroot' },
+            `classroot$${class_code}`
+        );
 
         return class_node;
     }
 
 
-    _createQuestions( graph, qtok, [ [ class_code ], tokens ] )
+    _createQuestions( graph, qtok, tokens )
     {
+        const [ class_code ] = qtok.class_code;
+
         // First, see if the next question is a continuation of this one,
         // in which case we'll generate the actual question (TODO: this is a
         // quick-n-dirty solution for now; put some effort into it or have
@@ -385,7 +403,7 @@ module.exports = class SpecParser
             tokens,
             ( qstr_set, tok ) =>
             {
-                qstr_set.push( qtok.value + ' ' + tokens[ 0 ].value );
+                qstr_set.push( qtok.value + ' ' + tok.value );
                 return qstr_set;
             },
             []
@@ -399,10 +417,26 @@ module.exports = class SpecParser
         // make nodes out of each
         return qstr_set.map(
             qstr => graph.addNodeIfNew(
-                { type: 'question', label: this._qlabel( qstr ) },
+                this._qtokFromCont( qtok, qstr ),
                 `q$${qstr}`
             )
         );
+    }
+
+
+    _qtokFromCont( qtok, qstr )
+    {
+        // everything about the question continuation is the same except for
+        // the label
+        const newtok = Object.keys( qtok ).reduce( ( newtok, key ) =>
+        {
+            newtok[ key ] = qtok[ key ];
+            return newtok;
+        }, {} );
+
+        newtok.label = this._qlabel( qstr );
+
+        return newtok;
     }
 
 
@@ -438,11 +472,11 @@ module.exports = class SpecParser
                 pred:   class_code || "???",   // predicate
             };
 
-
             // create an edge from every question to every action
             qset.forEach(
                 q => graph.addEdges(
-                    q, actions, edge, `cond$${class_code}$${tok.type}$${tok.value}`
+                    q, actions, edge,
+                    `cond$${class_code}$${tok.type}$${tok.value}`
                 )
             );
 

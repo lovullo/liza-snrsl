@@ -38,7 +38,7 @@ module.exports = class GraphToDot
 {
     toDot( graph )
     {
-        return 'digraph "qgraph" { graph [ranksep=5,nodesep=1];' +
+        return 'digraph "qgraph" { graph [ranksep=15,nodesep=1];' +
             this._genNodes( graph ) +
             '}';
     }
@@ -82,7 +82,7 @@ module.exports = class GraphToDot
             {
                 const { qopts = [] } = node.data;
 
-                return out.edges.map( edge =>
+                return out.reledges.map( edge =>
                 {
                     const label = this._genEdgeLabel( edge );
 
@@ -100,7 +100,7 @@ module.exports = class GraphToDot
         }
 
         return outs.map(
-            enode => enode.edges.map(
+            enode => enode.reledges.map(
                 edge => c( `"${node.index}"`, enode, edge, "" )
             ).join( "\n" )
         );

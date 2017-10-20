@@ -146,13 +146,11 @@ module.exports = class NodeXmlGenerator
             return reqs;
         }, {} );
 
-        //console.error( cond_reqs );
-
         return asserts.reduce( ( xml, assert ) =>
         {
             const { cond, class: ref } = assert.data;
 
-            const req_classes = assert.edges
+            const req_classes = assert.reledges
                 .filter( edge => edge.action === 'assert-class' )
                 .map( edge =>
                 {
@@ -345,7 +343,7 @@ module.exports = class NodeXmlGenerator
 
             conds[ qid ] = [];
 
-            enode.edges
+            enode.reledges
                 .filter( edge => edge.action === edge_action )
                 .forEach( edge => conds[ qid ].push( edge ) );
 

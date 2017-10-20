@@ -200,14 +200,39 @@ module.exports = class Graph
                 index: node[ gsym ].index,
                 data:  node,
                 occur: node[ gsym ].occur,
-                edges: {
-                    out:  this._getEdgeNodes( node[ gsym ].out ),
-                    'in': this._getEdgeNodes( node[ gsym ].in ),
-                },
+                edges: this._lazyNodeEdges( node ),
             };
 
             return c( node_data );
         } );
+    }
+
+
+    /**
+     * Wait to process edges until explicitly requested
+     *
+     * Because #_getEdgeNodes is mutually recursive with this method, this
+     * is actually required.
+     *
+     * @param {Object} node node to load edges of
+     *
+     * @return {Object} object with `out` and `in` fields
+     */
+    _lazyNodeEdges( node )
+    {
+        const _self = this;
+
+        return {
+            get out()
+            {
+                return _self._getEdgeNodes( node[ gsym ].out );
+            },
+
+            get in()
+            {
+                return _self._getEdgeNodes( node[ gsym ].in );
+            },
+        };
     }
 
 
@@ -227,8 +252,11 @@ module.exports = class Graph
                 type:  node.type,
                 index: node[ gsym ].index,
                 occur: node[ gsym ].occur,
-                edges: edges,
+                edges: this._lazyNodeEdges( node ),
                 data:  node,
+
+                // edges relative to this relation
+                reledges: edges,
             };
         } );
     }

@@ -131,7 +131,7 @@ module.exports = class SpecEvaluator
         // this has to be done _per action_
         node.edges.out.forEach( enode =>
         {
-            const conds        = enode.edges.filter( edge => edge.type === 'cond' );
+            const conds        = enode.reledges.filter( edge => edge.type === 'cond' );
             const class_remain = this._calcClassRemainCounts( conds, class_in );
 
             Object.keys( class_remain )
@@ -220,7 +220,7 @@ module.exports = class SpecEvaluator
         // the domain is defined by the predicates of its actions
         const conds = node.edges.out.reduce(
             ( edges, out ) => edges.concat(
-                out.edges.filter( edge => edge.type === 'cond' )
+                out.reledges.filter( edge => edge.type === 'cond' )
             ),
             []
         );
