@@ -35,6 +35,11 @@ const evaluator = new ( require( __dirname + '/../src/SpecEvaluator' ) )(
     console.error.bind( console )
 );
 
+const outsteps = {
+    '--graph': [ "Generating Graphviz dot...", todot.toDot.bind( todot ) ],
+    '--xml':   [ "Regurgitating XML...", xmlout.fromGraph.bind( xmlout ) ],
+};
+
 
 // output to stdout so that compiled output can be redirected/piped
 console.error( "Protiviti Structured Rating DSL" );
@@ -59,10 +64,21 @@ parser.parse(
     } )
     .then( graph =>
     {
-        console.error( "Generating Graphviz dot..." );
-        return [ graph, todot.toDot( graph ) ];
+        for ( let step in outsteps ) {
+            if ( opts[ step ] ) {
+                const [ label, f ] = outsteps[ step ];
+
+                console.error( label );
+                console.log( f( graph ) );
+
+                return graph;
+            }
+        }
+
+        throw Error(
+            "Must specify one of: " + Object.keys( outsteps ).join( ", " )
+        );
     } )
-    .then( ( [ graph, dot ] ) => ( console.log( dot ), graph ) )
     .then( graph =>
     {
         console.error( "Graph node statistics:" );
