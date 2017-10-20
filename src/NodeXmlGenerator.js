@@ -280,7 +280,10 @@ module.exports = class NodeXmlGenerator
         }
 
         const cid      = 'qwhen-' + node.data.qid.replace( /_/g, '-' );
-        const classify = `<classify as="${cid}" any="true">\n${matches}</classify>`;
+        const desc     = `${node.data.qid} applicable`;
+        const classify = `<classify as="${cid}" any="true" desc="${desc}">\n` +
+              matches +
+              `</classify>`;
 
         const cnode = graph.addNode(
             { type: 'xml', label: classify },
