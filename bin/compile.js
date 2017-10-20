@@ -4,9 +4,24 @@
 
 'use strict';
 
-const fs     = require( 'fs' );
+const fs = require( 'fs' );
 
-const csv_path = process.argv[ 2 ] || (() => {
+const opts = process.argv.slice( 2 ).reduce(
+    ( opts, value ) =>
+    {
+        if ( value[ 0 ] === '-' ) {
+            opts[ value ] = value;
+        }
+        else {
+            opts.args.push( value );
+        }
+
+        return opts;
+    },
+    { args: [] }
+);
+
+const csv_path = opts.args[ 0 ] || (() => {
     throw Error( "Missing CSV path" );
 } )();
 
