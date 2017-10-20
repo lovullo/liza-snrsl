@@ -187,7 +187,7 @@ module.exports = class NodeXmlGenerator
     {
         const [ cnode, preds ] = this._genWhenPreds( graph, node );
 
-        const wstr = [ this._genWhenParent( node ), preds ]
+        const wstr = [ this._genWhenParent( graph, node ), preds ]
             .join( ' ' )
             .trim();
 
@@ -195,7 +195,7 @@ module.exports = class NodeXmlGenerator
     }
 
 
-    _genWhenParent( node )
+    _genWhenParent( graph, node )
     {
         const parents = node.edges.in.filter(
             enode => enode.type === 'question'
@@ -212,9 +212,41 @@ module.exports = class NodeXmlGenerator
 
         // but any more than one parent is going to need its own
         // classification
-        //
-        // we don't actually encounter this situation right now, so hold off
-        throw Error( "TODO: multi-parent @when" );
+        return this._genMultiParentWhen( graph, node, parents );
+    }
+
+
+    /**
+     * Generate @when condition for multi-parent question
+     *
+     * Since @when does not support grouping, a separate classification is
+     * needed to allow it to display whenever any parent is set.
+     *
+     * This will add an XML node to the graph for the generated
+     * classification.
+     *
+     * @param {Graph}         graph   destination graph
+     * @param {Object}        node    source node
+     * @param {Array<Object>} parents parent question nodes
+     *
+     * @return {string} generated classification name
+     */
+    _genMultiParentWhen( graph, node, parents )
+    {
+        const matches = parents.map( parent =>
+            `  <match on="${parent.data.qid}" />`
+        );
+
+        const cname = node.data.qid.replace( '_', '-' ) + '-when';
+
+        const cxml =
+            `<classify as="${cname}" desc="${node.data.qid} applicable">\n` +
+            matches.join( '\n' ) + '\n' +
+            `</classify>`;
+
+        this._attachXmlNode( graph, node, cxml, 'xml$when$' + cname );
+
+        return cname;
     }
 
 
