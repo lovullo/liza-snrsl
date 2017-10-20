@@ -248,7 +248,7 @@ module.exports = class NodeXmlGenerator
             `  <match on="${parent.data.qid}" />`
         );
 
-        const cname = node.data.qid.replace( '_', '-' ) + '-when';
+        const cname = 'qwhen-multi-' + node.data.qid.replace( '_', '-' );
 
         const cxml =
             `<classify as="${cname}" desc="${node.data.qid} applicable">\n` +
