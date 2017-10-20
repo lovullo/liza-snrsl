@@ -19,6 +19,30 @@ Future versions,
 ## Usage
 _TODO: Document once XML generation flag is added._
 
+### Rendering Graph
+Graph rendering is done using Graphviz.
+You probably want to output to an SVG:
+
+```sh
+  $ dot -Tsvg foo.dot > foo.svg
+```
+
+You can render to a PNG,
+  but its performance is pretty poor for large graphs.
+If you already have the SVG,
+  Inkscape does an excellent (performant) job rendering them,
+    with good quality:
+
+```sh
+  $ inkscape -z -e foo.png -w WIDTH_IN_PX foo.svg
+```
+
+When showing the graph to others,
+  it's probably a good idea to include both a PNG and the SVG---the
+    former provides a more performant rendering of the overall graph but is
+      unsuitable for any level of detail,
+        and the latter can be zoomed in on infinitely.
+
 
 ## Input Format
 Specifications are provided in Excel spreadsheets;
