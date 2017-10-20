@@ -17,14 +17,24 @@ Future versions,
       for example.
 
 ## Usage
-_TODO: Document once XML generation flag is added._
+To produce graph output for rendering with Graphviz (see below):
+
+```sh
+  $ ./bin/compile --graph input.csv > output.dot
+```
+
+To produce the generated XML grouped into sections:
+
+```sh
+  $ ./bin/compile --xml input.csv > output.xml
+```
 
 ### Rendering Graph
 Graph rendering is done using Graphviz.
 You probably want to output to an SVG:
 
 ```sh
-  $ dot -Tsvg foo.dot > foo.svg
+  $ dot -Tsvg output.dot > output.svg
 ```
 
 You can render to a PNG,
@@ -34,7 +44,7 @@ If you already have the SVG,
     with good quality:
 
 ```sh
-  $ inkscape -z -e foo.png -w WIDTH_IN_PX foo.svg
+  $ inkscape -z -e output.png -w WIDTH_IN_PX output.svg
 ```
 
 When showing the graph to others,
