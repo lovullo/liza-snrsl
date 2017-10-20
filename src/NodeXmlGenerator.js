@@ -50,7 +50,9 @@ module.exports = class NodeXmlGenerator
             `  </enum>\n` +
             `</typedef>`;
 
-        this._attachXmlNode( graph, node, typedef, 'xml$class$typedef' );
+        this._attachXmlNode(
+            graph, node, typedef, 'typedefs', 'xml$class$typedef'
+        );
 
         return node;
     }
@@ -74,6 +76,7 @@ module.exports = class NodeXmlGenerator
         const xml_node = graph.addNode( {
             type:  'xml',
             label: xml,
+            group: 'questions',
         }, `xml$q${node.id}` );
 
         // question -> question XML
@@ -255,7 +258,9 @@ module.exports = class NodeXmlGenerator
             matches.join( '\n' ) + '\n' +
             `</classify>`;
 
-        this._attachXmlNode( graph, node, cxml, 'xml$when$' + cname );
+        this._attachXmlNode(
+            graph, node, cxml, 'classes', 'xml$when$' + cname
+        );
 
         return cname;
     }
@@ -286,7 +291,11 @@ module.exports = class NodeXmlGenerator
               `</classify>`;
 
         const cnode = graph.addNode(
-            { type: 'xml', label: classify },
+            {
+                type: 'xml',
+                label: classify,
+                group: 'classes',
+            },
             `xml$c$${cid}`
         );
 
@@ -294,14 +303,14 @@ module.exports = class NodeXmlGenerator
     }
 
 
-    _attachXmlNode( graph, node, xml, indexed_by )
+    _attachXmlNode( graph, node, xml, group, indexed_by )
     {
         if ( !xml ) {
             return null;
         }
 
         const xml_node = graph.addNode(
-            { type: 'xml', label: xml },
+            { type: 'xml', label: xml, group: group },
             indexed_by
         );
 
@@ -341,7 +350,9 @@ module.exports = class NodeXmlGenerator
 
 
         // produce XML node for prohibits
-        this._attachXmlNode( graph, node, prohibits,'xml$prohibits' );
+        this._attachXmlNode(
+            graph, node, prohibits, 'prohibits', 'xml$prohibits'
+        );
 
         return node;
     }
@@ -428,7 +439,9 @@ module.exports = class NodeXmlGenerator
             `        name="${name}">\n${matchxml}</t:form>`;
 
         // produce XML node for prohibits
-        this._attachXmlNode( graph, node, formxml, `xml$form$${name}` );
+        this._attachXmlNode(
+            graph, node, formxml, 'forms', `xml$form$${name}`
+        );
 
         return node;
     }
