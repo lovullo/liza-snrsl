@@ -91,6 +91,9 @@ module.exports = class NodeXmlGenerator
             );
         }
 
+        this._genParamXml( graph, node, xml_node );
+        this._genInputMapXml( graph, node, xml_node );
+
         return node;
     }
 
@@ -309,7 +312,7 @@ module.exports = class NodeXmlGenerator
             return null;
         }
 
-        const xml_node = graph.addNode(
+        const xml_node = graph.addNodeIfNew(
             { type: 'xml', label: xml, group: group },
             indexed_by
         );
@@ -346,7 +349,7 @@ module.exports = class NodeXmlGenerator
 
             return `<t:prohibit id="${this._idToCid(qid)}"\n` +
                 `            reason="${reason}">\n${matches}</t:prohibit>`;
-        } ).join( "\n\n" );
+        } ).join( "\n\n\n" );
 
 
         // produce XML node for prohibits
@@ -441,6 +444,36 @@ module.exports = class NodeXmlGenerator
         // produce XML node for prohibits
         this._attachXmlNode(
             graph, node, formxml, 'forms', `xml$form$${name}`
+        );
+
+        return node;
+    }
+
+
+    _genInputMapXml( graph, node, edge_from )
+    {
+        const { qid } = node.data;
+        const mxml    = `<pass name="${qid}" />`
+
+        this._attachXmlNode(
+            graph, edge_from, mxml, 'inmaps', `xml$inmap$${qid}`
+        );
+
+        return node;
+    }
+
+
+    _genParamXml( graph, node, edge_from )
+    {
+        const { qid, label } = node.data;
+
+        const esclabel = this._xmlEscape( label );
+
+        const pxml = `<param name="${qid}" type="integer" set="vector"\n` +
+            `       desc="${esclabel}" />`;
+
+        this._attachXmlNode(
+            graph, edge_from, pxml, 'params', `xml$param$${qid}`
         );
 
         return node;
