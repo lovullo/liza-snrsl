@@ -304,17 +304,21 @@ module.exports = class NodeXmlGenerator
                 ""
             );
 
-        if ( !matches ) {
-            return [ null, "" ];
-        }
-
-        const cid      = 'qwhen-' + node.data.qid.replace( /_/g, '-' );
+        // we're always going to generate a classification, even if there
+        // are no matches, for the sake of simplicity (TODO: remove
+        // unnecessary classifications); this allows anything depending on
+        // these classes to use them without the need to determine whether
+        // they might exist
+        const cid      = this._qwhenId( node.data.qid );
         const desc     = `${node.data.qid} applicable`;
         const classify = `<classify as="${cid}" any="true" desc="${desc}">\n` +
-              matches +
+              ( ( matches.length > 0 )
+                  ? matches
+                  : `  <match on="alwaysTrue" />\n`
+              ) +
               `</classify>`;
 
-        const cnode = graph.addNode(
+        const cnode = graph.addNodeIfNew(
             {
                 type: 'xml',
                 label: classify,
@@ -324,6 +328,12 @@ module.exports = class NodeXmlGenerator
         );
 
         return [ cnode, cid ];
+    }
+
+
+    _qwhenId( qid )
+    {
+        return 'qwhen-' + qid.replace( /_/g, '-' );
     }
 
 
