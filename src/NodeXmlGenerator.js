@@ -411,11 +411,11 @@ module.exports = class NodeXmlGenerator
         // TOOD: e.g. "greater than X"
         return qconds[ qid ].map( qcond =>
         {
-            const cond     = this._convertCond( qcond.cond, qid );
-            const { pred } = qcond;
+            const cond = this._convertCond( qcond.cond, qid );
+            const pred = `CLASS_${qcond.pred}`;
 
             return (
-                ( pred
+                ( qcond.pred
                     ? `  <all>\n    <match on="class" value="${pred}" />\n  `
                     : ''
                 ) +
