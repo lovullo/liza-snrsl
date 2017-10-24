@@ -359,8 +359,9 @@ module.exports = class NodeXmlGenerator
 
         const qconds = this._getQconds( 'ineligible', graph, node );
 
-        // generate prohibits for each question
-        const prohibits = Object.keys( qconds ).map( qid =>
+        // generate submits for each question (they're actually prohibits,
+        // but submits allow us to see every reason without aborting)
+        const submits = Object.keys( qconds ).map( qid =>
         {
             const reason  = labels[ qid ];
             const matches = this._xmlEncloseAndIndent(
@@ -368,14 +369,14 @@ module.exports = class NodeXmlGenerator
                 'any'
             );
 
-            return `<t:prohibit id="${this._idToCid(qid)}"\n` +
-                `            reason="${reason}">\n${matches}</t:prohibit>`;
+            return `<t:submit id="${this._idToCid(qid)}"\n` +
+                `          reason="${reason}">\n${matches}</t:submit>`;
         } ).join( "\n\n\n" );
 
 
-        // produce XML node for prohibits
+        // produce XML node for submits
         this._attachXmlNode(
-            graph, node, prohibits, 'prohibits', 'xml$prohibits'
+            graph, node, submits, 'submits', 'xml$submits'
         );
 
         return node;
