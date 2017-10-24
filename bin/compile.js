@@ -42,7 +42,7 @@ const outsteps = {
 
 
 // output to stdout so that compiled output can be redirected/piped
-console.error( "Protiviti Structured Rating DSL" );
+console.error( "Structured Natural Rater Specification Language" );
 console.error( "Lexing document and constructing graph..." );
 
 parser.parse(

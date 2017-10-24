@@ -1,12 +1,15 @@
-# Protiviti Structured Rating DSL
+# Structured Natural Rater Specification Language
 This is a compiler written by RT Buffalo for a structured plain English
-  specification format used in Protiviti rater specifications.
-The grammar is semi-formal and hierarchical.
+  (natural language) specification format used in certain rater
+  specifications.
+The grammar is semi-formal and hierarchical;
+  this compiler was written to parse an _existing_, hand-written
+    specification.
+XML output is formatted for use in Liza and TAME,
+  focused on UI generation.
 
 This project was somewhat informally written in JavaScript as a
   proof-of-concept.
-For the time being at least,
-  this implementation will remain.
 The implementation is therefore incomplete:
   it is useful for generating template XML that can then be manually
   modified and integrated into new or existing raters.
@@ -15,6 +18,18 @@ Future versions,
     may benefit from support for mapping generated question ids to desired
     destination ids in the generated XML,
       for example.
+
+It is not the goal of this project to be able to produce a functioning rater
+  in a completely automated fashion---the
+    Program XML format defined by Liza is intended to be easily
+    human-readable and editable.
+This specification language eases the development process by allowing
+  specification writers to use a format of their choice without having to
+  learn the formalities of our DSLs.
+
+Further,
+  it is not the intent of this project to generate rating calculations;
+    such complexities are best left to the declarative metasyntax of TAME.
 
 ## Usage
 To produce graph output for rendering with Graphviz (see below):

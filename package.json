@@ -1,6 +1,6 @@
 {
-  "name":        "protiviti-dsl",
-  "description": "Protiviti Structured Rating DSL",
+  "name":        "liza-snrsl",
+  "description": "Structured Natural Rater Specification Language",
   "author":      "RT Buffalo",
 
   "dependencies": {

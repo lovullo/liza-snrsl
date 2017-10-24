@@ -380,7 +380,7 @@ module.exports = class SpecParser
         // First, see if the next question is a continuation of this one,
         // in which case we'll generate the actual question (TODO: this is a
         // quick-n-dirty solution for now; put some effort into it or have
-        // Protiviti take care of it).
+        // PMs take care of it).
         // (consumes tokens)
         const qset     = this._createQuestionSet( graph, qtok, tokens );
         const existing = qset.map( q => graph[ q ] );
