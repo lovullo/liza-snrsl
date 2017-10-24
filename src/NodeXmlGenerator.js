@@ -373,7 +373,7 @@ module.exports = class NodeXmlGenerator
         // but submits allow us to see every reason without aborting)
         const submits = Object.keys( qconds ).map( qid =>
         {
-            const reason  = labels[ qid ];
+            const reason  = this._xmlEscape( labels[ qid ] );
             const matches = this._xmlEncloseAndIndent(
                 this._genCondMatches( qconds, qid ),
                 'any'
