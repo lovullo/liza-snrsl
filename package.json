@@ -1,9 +1,24 @@
 {
   "name":        "liza-snrsl",
   "description": "Structured Natural Rater Specification Language",
-  "author":      "RT Buffalo",
+  "author":      "R-T Specialty, LLC.",
+  "homepage":    "https://github.com/lovullo/liza-snrsl",
+  "license":     "GPL-3.0+",
+
+  "engines": {
+    "node": ">=4.0"
+  },
 
   "dependencies": {
     "csvtojson": ">=1.1"
-  }
+  },
+
+  "licenses": [
+    {
+      "type": "GPLv3+",
+      "url": "http://www.gnu.org/licenses/gpl.html"
+    }
+  ],
+
+  "keywords": [ "liza", "tame" ]
 }
