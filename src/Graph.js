@@ -329,7 +329,7 @@ module.exports = class Graph
     }
 
 
-    getEdgesOfType( type, edges )
+    getEdgeNodesOfType( type, edges )
     {
         return edges.filter(
             enode => enode.data.type === type

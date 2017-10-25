@@ -35,6 +35,7 @@ module.exports = class NodeXmlGenerator
                 switch ( node.data.type ) {
                     case 'classes':
                         return this._genClassRootXml( graph, node );
+
                     case 'question':
                         return this._genQuestionXml( graph, node );
 
@@ -73,6 +74,26 @@ module.exports = class NodeXmlGenerator
 
         this._attachXmlNode(
             graph, node, typedef, 'typedefs', 'xml$class$typedef'
+        );
+
+        return this._genClassClasses( graph, node, classes );
+    }
+
+
+    _genClassClasses( graph, node, classes )
+    {
+        const xml = classes.map( cnode =>
+        {
+            const cid = cnode.data.class;
+
+            return `<classify as="any-${cid}"\n` +
+                `          desc="${cid} chosen">\n` +
+                `  <match on="class" value="CLASS_${cid}" />\n` +
+                `</classify>`
+        } ).join( "\n" );
+
+        this._attachXmlNode(
+            graph, node, xml, 'classclasses', 'xml$class$classes'
         );
 
         return node;
@@ -156,57 +177,80 @@ module.exports = class NodeXmlGenerator
     /**
      * Generate question class assertions
      *
-     * - Question answer (edge cond, e.g. yes/no)
-     *   - Input class (edge pred)
-     *     - Assert class (edge dest node class)
+     * The outermost assertion checks whether the condition value
+     * (e.g. yes/no) is met.  The next level asserts on the edge predicate,
+     * if any.  The third level asserts on the required class.
      *
-     * TODO: Unfinished!
+     * @param {Object} graph destination graph
+     * @param {Object} node  question node
+     *
+     * @return {string} generated assertion XML
      */
     _genAsserts( graph, node )
     {
-        // TODO: technically edges of action `assert-class' is more correct
-        const asserts = graph.getEdgesOfType( 'class', node.edges.out );
+        // class dependencies count as assertions on that respective class
+        const cnodes = graph.getEdgeNodesOfType( 'class', node.edges.out );
 
-        const cond_reqs = asserts.reduce( ( reqs, assert ) =>
+        if ( cnodes.length === 0 ) {
+            return "";
+        }
+
+        // for each class node (cnode), the `reledges' field contains the
+        // `assert-class' edges contributing to this relationship
+        // TODO: probably want `@forEach' on assertions
+        return cnodes.reduce( ( xml, cnode ) =>
         {
-            const { cond, pred, class: ref } = assert.data;
+            const { class: ref, label } = cnode.data;
 
-            // e.g yes/no
-            if ( !reqs[ cond ] ) {
-                reqs[ cond ] = {};
-            }
+            const cedges = cnode.reledges.filter( edge => edge.type === 'cond' );
 
-            const req = reqs[ cond ];
+            const message = `${label} required`;
 
-            // input class code (that, if exists, asserts on another class)
-            if ( !req[ pred ] ) {
-                req[ pred ] = [];
-            }
+            return cedges.map(cedge =>
+            {
+                const value = this._genCondAssertValue( cedge );
+                const cxml  = this._genCondAssert( cedge, message, ref );
 
-            return reqs;
-        }, {} );
-
-        return asserts.reduce( ( xml, assert ) =>
-        {
-            const { cond, class: ref } = assert.data;
-
-            const req_classes = assert.reledges
-                .filter( edge => edge.action === 'assert-class' )
-                .map( edge =>
-                {
-                    const req_ref = "";
-                    const message = "";
-
-                    return `    <assert:equal ref="'${req_ref}'" value="'1'">\n` +
-                        `      <assert:message>${message}</assert:message>\n` +
-                        `    </assert>`;
-                } )
-                .join( "\n" );
-
-            return `  <assert:equal ref="'c:any-${ref}'" value="'1'">\n` +
-                req_classes + '\n' +
-                `  </assert>`;
+                return xml +
+                    `    <assert:equal value="'${value}'" ` +
+                    `recordFailure="false">\n` +
+                    `      <assert:success>\n` +
+                    cxml +
+                    `      </assert:success>\n`+
+                    `    </assert:equal>\n`;
+            } ).join( "\n" );
         }, "" );
+    }
+
+
+    _genCondAssert( edge, message, ref )
+    {
+        const ws = "        ";
+
+        const condxml =
+            `${ws}<assert:equal ref="c:any-${ref}" value="'1'">\n` +
+            `${ws}  <assert:message>${message}</assert:message>\n` +
+            `${ws}</assert:equal>\n`;
+
+        if ( edge.pred === undefined ) {
+            return condxml + "\n";
+        }
+
+        return `${ws}<assert:equal ref="c:any-${edge.pred}" value="'1'" ` +
+            `recordFailure="false">\n` +
+            `${ws}  <assert:success>\n` +
+            condxml.replace( /^/mg, '    ' ) + "\n" +
+            `${ws}  </assert:success>\n` +
+            `${ws}</assert:equal>\n`;
+    }
+
+
+    _genCondAssertValue( edge )
+    {
+        return {
+            yes: "1",
+            no:  "0",
+        }[ edge.cond ] || "TODO";
     }
 
 
@@ -308,7 +352,7 @@ module.exports = class NodeXmlGenerator
 
     _genEligXml( graph, node )
     {
-        const questions = graph.getEdgesOfType( 'question', node.edges.in );
+        const questions = graph.getEdgeNodesOfType( 'question', node.edges.in );
 
         const labels = questions.reduce( ( labels, enode ) =>
         {
@@ -347,7 +391,7 @@ module.exports = class NodeXmlGenerator
 
     _getQconds( edge_action, graph, node )
     {
-        const questions = graph.getEdgesOfType( 'question', node.edges.in );
+        const questions = graph.getEdgeNodesOfType( 'question', node.edges.in );
 
         // each `cond' edge from question nodes carries the value of the
         // question that will trigger a prohibit
