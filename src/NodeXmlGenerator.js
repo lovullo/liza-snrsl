@@ -223,70 +223,19 @@ module.exports = class NodeXmlGenerator
 
     _genWhen( graph, node )
     {
-        const [ cnode, preds ] = this._genWhenPreds( graph, node );
-
-        const wstr = [ this._genWhenParent( graph, node ), preds ]
-            .join( ' ' )
-            .trim();
-
-        return [ cnode, wstr ];
+        return this._genWhenPreds( graph, node );
     }
 
 
-    _genWhenParent( graph, node )
+    _getParentMatches( node )
     {
         const parents = node.edges.in.filter(
             enode => enode.type === 'question'
         );
 
-        if ( parents.length === 0 ) {
-            return '';
-        }
-
-        // if there is only a _single_ parent, we can use the `q:' syntax
-        if ( parents.length === 1 ) {
-            return 'q:' + parents[ 0 ].data.qid;
-        }
-
-        // but any more than one parent is going to need its own
-        // classification
-        return this._genMultiParentWhen( graph, node, parents );
-    }
-
-
-    /**
-     * Generate @when condition for multi-parent question
-     *
-     * Since @when does not support grouping, a separate classification is
-     * needed to allow it to display whenever any parent is set.
-     *
-     * This will add an XML node to the graph for the generated
-     * classification.
-     *
-     * @param {Graph}         graph   destination graph
-     * @param {Object}        node    source node
-     * @param {Array<Object>} parents parent question nodes
-     *
-     * @return {string} generated classification name
-     */
-    _genMultiParentWhen( graph, node, parents )
-    {
-        const matches = parents.map( parent =>
+        return parents.map( parent =>
             `  <match on="${parent.data.qid}" />`
-        );
-
-        const cname = 'qwhen-multi-' + node.data.qid.replace( '_', '-' );
-
-        const cxml =
-            `<classify as="${cname}" desc="${node.data.qid} applicable">\n` +
-            matches.join( '\n' ) + '\n' +
-            `</classify>`;
-
-        this._attachXmlNode(
-            graph, node, cxml, 'classes', 'xml$when$' + cname
-        );
-
-        return cname;
+        ).join( "\n" );
     }
 
 
@@ -295,7 +244,7 @@ module.exports = class NodeXmlGenerator
         // each question needs its own existential classification matching
         // on its predicates (technically we don't if we only have one, but
         // why bother)
-        const matches = node.edges.in
+        const cmatches = node.edges.in
             .filter( enode => enode.type === 'class' )
             .map( enode => 'CLASS_' + enode.data.class )
             .reduce(
@@ -303,6 +252,9 @@ module.exports = class NodeXmlGenerator
                     xml + `  <match on="class" value="${cstr}" />\n`,
                 ""
             );
+
+        const pmatches = this._getParentMatches( node );
+        const matches  = cmatches + pmatches + ( pmatches ? '\n' : '' );
 
         // we're always going to generate a classification, even if there
         // are no matches, for the sake of simplicity (TODO: remove
@@ -312,7 +264,7 @@ module.exports = class NodeXmlGenerator
         const cid      = this._qwhenId( node.data.qid );
         const desc     = `${node.data.qid} applicable`;
         const classify = `<classify as="${cid}" any="true" desc="${desc}">\n` +
-              ( ( matches.length > 0 )
+              ( ( matches )
                   ? matches
                   : `  <match on="alwaysTrue" />\n`
               ) +
