@@ -24,10 +24,10 @@
 const fs = require( 'fs' );
 
 const opts = process.argv.slice( 2 ).reduce(
-    ( opts, value ) =>
+    ( opts, value, i ) =>
     {
         if ( value[ 0 ] === '-' ) {
-            opts[ value ] = value;
+            opts[ value ] = i;
         }
         else {
             opts.args.push( value );
@@ -38,18 +38,25 @@ const opts = process.argv.slice( 2 ).reduce(
     { args: [] }
 );
 
-const csv_path = opts.args[ 0 ] || (() => {
+const csv_path = opts.args[ opts.args.length - 1 ] || (() => {
     throw Error( "Missing CSV path" );
 } )();
 
 const csvtojson = require( 'csvtojson' );
+
+// question map, if provided
+const qmapi = opts[ '--qmap' ];
+const qmap  = ( qmapi !== undefined )
+    ? JSON.parse( fs.readFileSync( opts.args[ qmapi ] ) )
+    : {};
 
 const parser    = new ( require( __dirname + '/../src/SpecParser' ) )();
 const xmlgen    = new ( require( __dirname + '/../src/NodeXmlGenerator' ) )();
 const xmlout    = new ( require( __dirname + '/../src/XmlOutput' ) )();
 const todot     = new ( require( __dirname + '/../src/GraphToDot' ) )();
 const evaluator = new ( require( __dirname + '/../src/SpecEvaluator' ) )(
-    console.error.bind( console )
+    console.error.bind( console ),
+    qmap
 );
 
 const outsteps = {
@@ -82,7 +89,7 @@ parser.parse(
     .then( graph =>
     {
         for ( let step in outsteps ) {
-            if ( opts[ step ] ) {
+            if ( opts[ step ] !== undefined ) {
                 const [ label, f ] = outsteps[ step ];
 
                 console.error( label );

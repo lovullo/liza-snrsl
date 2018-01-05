@@ -33,9 +33,10 @@ const crypto = require( 'crypto' );
  */
 module.exports = class SpecEvaluator
 {
-    constructor( log )
+    constructor( log, id_map )
     {
-        this._log = log;
+        this._log   = log;
+        this._idMap = id_map;
     }
 
 
@@ -82,10 +83,12 @@ module.exports = class SpecEvaluator
 
     _idQuestion( node )
     {
-        node.data.qid = 'q_' + crypto.createHash( 'sha256' )
+        const id = 'q_' + crypto.createHash( 'sha256' )
             .update( node.data.label )
             .digest( 'hex' )
             .substr( 0, 5 );
+
+        node.data.qid = this._idMap[ id ] || id;
 
         return node;
     }
